@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-web-pod      
+  namespace: production
+  labels:
+    app: web-app        
+spec:
+  containers:
+  - name: web-container  
+    image: nginx:1.25    
+    ports:
+    - containerPort: 80 

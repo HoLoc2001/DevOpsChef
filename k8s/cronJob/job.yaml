@@ -1,0 +1,12 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migrate-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: migration
+        image: python:3.9
+        command: ["python", "migrate.py"]
+      restartPolicy: Never
