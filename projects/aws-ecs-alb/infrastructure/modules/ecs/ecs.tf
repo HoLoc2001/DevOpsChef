@@ -13,7 +13,7 @@ resource "aws_ecs_task_definition" "app" {
   network_mode             = "awsvpc"
   cpu                      = var.cpu
   memory                   = var.memory
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = var.execution_role_arn
 
   container_definitions = jsonencode([
     {
@@ -50,15 +50,15 @@ resource "aws_ecs_service" "app" {
 
   network_configuration {
     subnets          = var.public_subnet_ids
-    security_groups  = [aws_security_group.ecs.id]
+    security_groups  = [var.security_group_id]
     assign_public_ip = true
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.main.arn
+    target_group_arn = var.target_group_arn
     container_name   = var.project_name
     container_port   = var.container_port
   }
 
-  depends_on = [aws_lb_listener.http]
+  # depends_on = [aws_lb_listener.http]
 }
