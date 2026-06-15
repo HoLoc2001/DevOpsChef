@@ -60,5 +60,7 @@ resource "aws_ecs_service" "app" {
     container_port   = var.container_port
   }
 
+  tags = var.tags
+
   depends_on = [aws_lb_listener.http]
 }

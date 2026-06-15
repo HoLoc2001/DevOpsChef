@@ -1,13 +1,21 @@
+module "vpc" {
+  source = "../../modules/vpc"
+
+  project_name          = var.project_name
+  aws_region            = var.aws_region
+  vpc_cidr              = "10.0.0.0/16"
+  public_subnet_1_cidr  = "10.0.1.0/24"
+  public_subnet_2_cidr  = "10.0.2.0/24"
+  private_subnet_1_cidr = "10.0.3.0/24"
+  private_subnet_2_cidr = "10.0.4.0/24"
+}
 
 module "ecs" {
   source = "../../modules/ecs"
 
-
-  vpc_id             = var.vpc_id
-  public_subnet_ids  = var.public_subnet_ids
+  public_subnet_ids  = module.vpc.public_subnet_ids
   container_image    = var.container_image
   container_port     = var.container_port
-  health_check_path  = var.health_check_path
   cpu                = var.cpu
   memory             = var.memory
   desired_count      = var.desired_count
@@ -22,9 +30,8 @@ module "elb" {
   source = "../../modules/elb"
 
 
-  vpc_id                = var.vpc_id
-  public_subnet_ids     = var.public_subnet_ids
-  container_image       = var.container_image
+  vpc_id                = module.vpc.vpc_id
+  public_subnet_ids     = module.vpc.public_subnet_ids
   container_port        = var.container_port
   health_check_path     = var.health_check_path
   project_name          = var.project_name
@@ -35,22 +42,13 @@ module "sg" {
   source = "../../modules/sg"
 
 
-  vpc_id            = var.vpc_id
-  public_subnet_ids = var.public_subnet_ids
-  container_image   = var.container_image
+  vpc_id            = module.vpc.vpc_id
   container_port    = var.container_port
-  health_check_path = var.health_check_path
   project_name      = var.project_name
 }
 
 module "iam" {
   source = "../../modules/iam"
 
-
-  vpc_id            = var.vpc_id
-  public_subnet_ids = var.public_subnet_ids
-  container_image   = var.container_image
-  container_port    = var.container_port
-  health_check_path = var.health_check_path
   project_name      = var.project_name
 }
