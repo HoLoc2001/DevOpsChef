@@ -1,0 +1,43 @@
+// 1. Discover running Docker containers via the local socket
+discovery.docker "local_containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// 2. Clean up messy Docker metadata internal labels into clean Loki labels
+discovery.relabel "docker_logs_filter" {
+  targets = discovery.docker.local_containers.targets
+
+  // Keeps the container name and maps it to a clean label
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  // Optional: Only scrape containers that have a specific label (e.g., logging=true)
+  // rule {
+  //   source_labels = ["__meta_docker_container_label_logging"]
+  //   regex         = "false"
+  //   action        = "drop"
+  // }
+}
+
+// 3. Scrape the logs from the discovered targets
+loki.source.docker "scrape_docker" {
+  host    = "unix:///var/run/docker.sock"
+  targets = discovery.relabel.docker_logs_filter.output
+  forward_to = [loki.write.local_loki.receiver]
+}
+
+// 4. Send the processed logs to your Loki endpoint
+loki.write "local_loki" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+    
+    // Uncomment and add credentials if using Grafana Cloud
+    // basic_auth {
+    //   username = env("LOGS_USERNAME")
+    //   password = env("LOGS_PASSWORD")
+    // }
+  }
+}
